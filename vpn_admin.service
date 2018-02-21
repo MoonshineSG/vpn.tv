@@ -1,0 +1,14 @@
+[Unit]
+Description=VPN Admin
+After=network.target auditd.service
+
+[Service]
+ExecStart=/usr/bin/python /home/pi/vpn.tv/vpn.py
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+Alias=vpn_admin.service
+
