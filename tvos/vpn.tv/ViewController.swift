@@ -42,7 +42,7 @@ class ViewController: UIViewController {
     }
     
     func setFlag(){
-        guard let url = URL(string: "http://\(server_ip)/flag/\(Date().timeIntervalSince1970)") else { return }
+        guard let url = URL(string: "http://\(server_ip)/flag/") else { return }
         URLSession.shared.dataTask(with: url) { (data, response, error) in
             if error != nil {
                 return

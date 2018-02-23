@@ -2,6 +2,7 @@
 # coding=utf-8
 
 import os
+from PIL import Image
 
 # server
 from flask import Flask, render_template, jsonify, send_from_directory
@@ -54,6 +55,10 @@ def _current():
 	location = os.path.splitext(os.path.basename(os.path.realpath("/etc/openvpn/default.conf")))[0]
 	return location
 
+def _country():
+	reader = geoip2.database.Reader(__geodb__)
+	return reader.country( firefox.open("https://api.ipify.org/").read() ).country
+	
 def _all():
 	files = os.listdir(__config__)
 	files.sort()
@@ -63,9 +68,7 @@ def _all():
 # ================================================================================================ UI
 @app.route('/')
 def html():
-	reader = geoip2.database.Reader(__geodb__)
-	country = reader.country( urlopen("https://api.ipify.org/").read() ).country.name	
-	return render_template("vpn.jinja2", locations=_all(), current=_current(), country=country)
+	return render_template( "vpn.jinja2", locations = _all(), current = _current(), country = _country().name )
 
 # ================================================================================================ API
 @app.route('/all')
@@ -95,19 +98,31 @@ def unregister(location):
 	
 @app.route('/country/')
 def country():
-	reader = geoip2.database.Reader(__geodb__)
-	return reader.country( firefox.open("https://api.ipify.org/").read() ).country.iso_code.lower()
+	return _country().iso_code.lower()
 
-# ================================================================================================ STATIC
-@app.route('/flag/<rnd>')
-def flag(rnd):
-	countries = geoip2.database.Reader(__geodb__)
-	country = countries.country( urlopen("https://api.ipify.org/").read() ).country.iso_code.lower()
+# ================================================================================================ STATIC	
+@app.route('/flag/')
+def flag():
+	country = _country().iso_code.lower()
 	
-	flag = os.path.join(__flags__, "%s.png"%country) 
-	if not os.path.isfile(flag):
-		firefox.retrieve("http://flagpedia.net/data/flags/ultra/%s.png"%country, flag)
+	flag = os.path.join(__flags__, "%s.png"%country)
+	if not os.path.isfile(flag):		
+		firefox.retrieve("http://flagpedia.net/data/flags/ultra/%s.png"%country, os.path.join(__flags__, "__%s.png"%country))
+		# Flag : 2560 x 1347
+		# Inset Banner: 1740 x 560
+		
+		image = Image.open( os.path.join(__flags__, "__%s.png"%country) )
+		w, h = image.size
+		
+		img_new = Image.new('RGBA', (1740, 1740))		
+		img_resize = image.resize((2560 / (h/560) , 560))		
+		
+		img_new.paste(img_resize, tuple(map(lambda x:(x[0]-x[1])/2, zip(img_new.size, img_resize.size))))
+		
+		img_new.save(flag, "PNG")
 	
+		os.remove(os.path.join(__flags__, "__%s.png"%country))
+		
 	return send_from_directory(__flags__, "%s.png"%country)
 	
 	
