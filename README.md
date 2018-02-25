@@ -30,6 +30,7 @@ vpn.tv
 
 
 Install `geoip2` (`easy_install geoip2`)
+Install `PIL` (`easy_install Pillow`) (you may need to install python-dev as well `sudo apt-get install python-dev`)
 
 Run the command below to fetch the `GeoLite` country database. You should run it via `cron` at regular intervals (once a week is more then enough) to get the latest database.
 
