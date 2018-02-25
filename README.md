@@ -37,7 +37,7 @@ Run the command below to fetch the `GeoLite` country database. You should run it
 wget -qO- http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz | tar xvz -C /home/pi/vpn.tv/geo/ --strip 1
 ```
 
-Copy the `vpn_admin.service` to `/etc/systemd/multi-user.wanted` and run 
+Copy the `vpn_admin.service` to `/lib/systemd/system/` and run 
 
 ```
 sudo systemctl enable vpn_admin
