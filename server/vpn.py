@@ -2,8 +2,7 @@
 # coding=utf-8
 
 import os
-from PIL import Image
-
+	
 # server
 from flask import Flask, render_template, jsonify, send_from_directory
 
@@ -11,6 +10,12 @@ from flask import Flask, render_template, jsonify, send_from_directory
 from urllib2 import urlopen
 from urllib import unquote_plus, FancyURLopener
 import geoip2.database
+
+try:
+	from PIL import Image
+	resize = True
+except:
+	resize = False
 
 # ================================================================================================ SETUP
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -32,7 +37,7 @@ firefox = Firefox()
 app = Flask(__name__, template_folder=__location__)
 app.url_map.strict_slashes = False
 app.jinja_env.trim_blocks = True
- 
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False 
 # ================================================================================================ Middleware
 def service(action):
 	os.system("sudo systemctl %s openvpn"%action)
@@ -74,9 +79,9 @@ def html():
 @app.route('/all')
 def all():
 	current = _current()
-	result = []
+	result = {}
 	for location in  _all():
-		result.append( tuple((location , location == current)) )
+		result[location] = (location == current)
 	print(result)
 	return  jsonify(result)
 
@@ -107,21 +112,25 @@ def flag():
 	
 	flag = os.path.join(__flags__, "%s.png"%country)
 	if not os.path.isfile(flag):		
-		firefox.retrieve("http://flagpedia.net/data/flags/ultra/%s.png"%country, os.path.join(__flags__, "__%s.png"%country))
-		# Flag : 2560 x 1347
-		# Inset Banner: 1740 x 560
 		
-		image = Image.open( os.path.join(__flags__, "__%s.png"%country) )
-		w, h = image.size
+		if resize:
+			firefox.retrieve("http://flagpedia.net/data/flags/ultra/%s.png"%country, os.path.join(__flags__, "__%s.png"%country))
+			# Flag : 2560 x 1347
+			# Inset Banner: 1740 x 560
+			
+			image = Image.open( os.path.join(__flags__, "__%s.png"%country) )
+			w, h = image.size
 		
-		img_new = Image.new('RGBA', (1740, 1740))		
-		img_resize = image.resize((2560 / (h/560) , 560))		
+			img_new = Image.new('RGBA', (1740, 1740))		
+			img_resize = image.resize((2560 / (h/560) , 560))		
 		
-		img_new.paste(img_resize, tuple(map(lambda x:(x[0]-x[1])/2, zip(img_new.size, img_resize.size))))
+			img_new.paste(img_resize, tuple(map(lambda x:(x[0]-x[1])/2, zip(img_new.size, img_resize.size))))
 		
-		img_new.save(flag, "PNG")
+			img_new.save(flag, "PNG")
 	
-		os.remove(os.path.join(__flags__, "__%s.png"%country))
+			os.remove(os.path.join(__flags__, "__%s.png"%country))
+		else:
+			firefox.retrieve("http://flagpedia.net/data/flags/ultra/%s.png"%country, os.path.join(__flags__, "%s.png"%country))			
 		
 	return send_from_directory(__flags__, "%s.png"%country)
 	
@@ -143,5 +152,5 @@ def add_header(r):
 # =================================     ENTRY POINT      =========================================
 # ================================================================================================
 if __name__=='__main__':
-	app.run(host='192.168.0.60', port=80, debug=False, threaded=True)
+	app.run(host='192.168.0.60', port=8080, debug=False, threaded=True)
 

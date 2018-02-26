@@ -4,7 +4,7 @@ import UIKit
 
 class ServiceProvider: NSObject, TVTopShelfProvider {
     
-    let server_ip = "192.168.0.60"
+    let server_ip = "192.168.0.60:8080"
     var cache = ""
 
     let topShelfStyle: TVTopShelfContentStyle = .inset

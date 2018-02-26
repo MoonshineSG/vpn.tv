@@ -3,7 +3,7 @@ import TVServices
 
 class ViewController: UIViewController {
     
-    let server_ip = "192.168.0.60"
+    let server_ip = "192.168.0.60:8080"
     
     @IBOutlet weak var country: UIImageView!
     @IBOutlet weak var mainStackView: UIStackView!
@@ -20,14 +20,14 @@ class ViewController: UIViewController {
     func updateUI(){
         self.setFlag()
         callAPI("/all/", successHandler:  { (data) in
-            guard let all = try? JSONSerialization.jsonObject(with: data, options: []) as! [String: Bool] else { return }
+            guard let all = try? JSONSerialization.jsonObject(with: data, options: []) as! Dictionary<String, Bool> else { return }
             DispatchQueue.main.async {
                 for aView in self.mainStackView.arrangedSubviews {
                     self.mainStackView.removeArrangedSubview(aView)
                     aView.removeFromSuperview()
                 }
                 var off = ButtonType.disabled
-                all.sorted(by: { $0.0.lowercased() < $1.0.lowercased() } ).forEach { item in
+                all.forEach { item in
                     if item.value {
                         off = ButtonType.off
                     }
