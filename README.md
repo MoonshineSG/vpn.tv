@@ -21,9 +21,9 @@ Copy the files and folders from `server` into the `/home/pi/vpn.tv/` folder on y
 
 ```
 vpn.tv
-├── config
-├── flags
-├── geo
+├── config/
+├── flags/
+├── geo/
 ├── vpn.jinja2
 └── vpn.py
 ```
